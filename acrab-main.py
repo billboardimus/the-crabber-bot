@@ -26,8 +26,8 @@ async def make_meme(msg, image, type, command, message):
     tex = ImageDraw.Draw(im)
     caps_msg = msg.replace(command, "").upper()
     char = len(caps_msg)
-    shadow = "black"
-    txt_clr = "white"
+    shadow = (0, 0, 0)
+    txt_clr = (255, 255, 255)
     l, w = im.size
     sz = int((l / 1.5 / char) + 20)
     fnt = ImageFont.truetype('DUBAI-LIGHT.TTF', sz)
@@ -51,28 +51,29 @@ async def make_meme(msg, image, type, command, message):
 async def on_message(message):
     if message.author == client.user:
         return
-
+    #   THE CRAB SECTION
     if message.content.startswith('!crabs') or message.content.endswith('!crabs'):
         await make_meme(message.content, picture, 'png', '!crabs', message)
-
+    #   THE CHUUL SECTION
     elif message.content.startswith('!chuul') or message.content.endswith('!chuul'):
         await make_meme(message.content, picture3, 'png', '!chuul', message)
-
+    #   THE .GIF SECTION
     elif message.content.startswith('!gif') or message.content.endswith('!gif'):
         im: Optional[Any] = Image.open(picture2)
         frames = []
-        crab_message = message.content.replace("!chuul", "").upper()
+        crab_message = message.content.replace("!gif", "").upper()
         char = len(crab_message)
+        l, w = im.size
+        sz = int((l / 1.83 / char) + 20)
+        fnt = ImageFont.truetype('DUBAI-LIGHT.TTF', sz)
+        shadow = (0, 0, 0)
+        txt_clr = (255, 255, 255)
         for frame in ImageSequence.Iterator(im):
+            frame = frame.convert('RGBA')
             tex = ImageDraw.Draw(frame)
-            l, w = im.size
-            sz = int((l / 1.83 / char) + 20)
-            fnt = ImageFont.truetype('DUBAI-LIGHT.TTF', sz)
             x, h = tex.textsize(crab_message, font=fnt)
             adj_x, adj_h = (l - x) / 2, (w / 3.5) - (h / 20)
-            tex.text((adj_x, adj_h), crab_message)
-            shadow = "black"
-            txt_clr = "white"
+            tex.text((adj_x, adj_h), crab_message, font=fnt)
             #   the black border
             tex.text((adj_x - 1, adj_h - 1), crab_message, font=fnt, fill=shadow)
             tex.text((adj_x + 1, adj_h - 1), crab_message, font=fnt, fill=shadow)
@@ -83,11 +84,12 @@ async def on_message(message):
             del tex
             temp = io.BytesIO()
             frame.save(temp, format="GIF", save_all=True, append_images=frames[1:])
-            frame.Image.open(temp)
             frames.append(frame)
-        frames[0].save('out.gif', save_all=True, append_images=frames[1:])
+        out = io.BytesIO()
+        frames[0].save(out, save_all=True, append_images=frames[1:], format="GIF")
+        out.seek(0)
 
-        await client.send_file(message.channel, temp, filename='your_crab.gif')
+        await client.send_file(message.channel, out, filename='your_crab.gif')
         #   await client.send_message(message.channel, str(im.size))    #   prints the size
 
 
