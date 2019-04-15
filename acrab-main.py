@@ -5,7 +5,7 @@ import io
 from PIL import Image, ImageDraw, ImageFont, ImageSequence
 
 
-TOKEN = 'NTY2MDg3NDIwNjcyNzM3Mjgx.XK_5NQ.r2K2YCxjJAwy9Twd-tVnwAiP71k'
+TOKEN = ' '
 
 PERM_INT = '75776'
 
