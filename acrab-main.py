@@ -2,10 +2,9 @@ from io import BytesIO
 from typing import Optional, Any
 import discord
 import io
+import time
 from PIL import Image, ImageDraw, ImageFont, ImageSequence
-
-
-TOKEN = ' '
+import config
 
 PERM_INT = '75776'
 
@@ -22,6 +21,7 @@ if len(yung) > 5:
 
 async def make_meme(msg, image, type, command, message):
     """Makes a meme with text (msg) overlaid on top of an image of file type when user enters command """
+    start_time = time.time()
     im = Image.open(image)
     tex = ImageDraw.Draw(im)
     caps_msg = msg.replace(command, "").upper()
@@ -44,8 +44,9 @@ async def make_meme(msg, image, type, command, message):
     temp: BytesIO = io.BytesIO()
     im.save(temp, type)
     temp.seek(0)
+    print("--- %s seconds --- before internet" % (time.time() - start_time))
     await client.send_file(message.channel, temp, filename='your_meme.png')
-
+    print("--- %s seconds ---" % (time.time() - start_time))
 
 @client.event
 async def on_message(message):
@@ -59,20 +60,23 @@ async def on_message(message):
         await make_meme(message.content, picture3, 'png', '!chuul', message)
     #   THE .GIF SECTION
     elif message.content.startswith('!gif') or message.content.endswith('!gif'):
+        start_time = time.time()
+
         im: Optional[Any] = Image.open(picture2)
         frames = []
-        crab_message = message.content.replace("!gif", "").upper()
+        crab_message = message.content.replace("!gif ", "").upper()
         char = len(crab_message)
         l, w = im.size
         sz = int((l / 1.83 / char) + 20)
         fnt = ImageFont.truetype('DUBAI-LIGHT.TTF', sz)
         shadow = (0, 0, 0)
         txt_clr = (255, 255, 255)
+        arb_tex = ImageDraw.Draw(im)
+        x, h = arb_tex.textsize(crab_message, font=fnt)
+        adj_x, adj_h = (l - x) / 2, (w / 3.5) - (h / 20)
         for frame in ImageSequence.Iterator(im):
             frame = frame.convert('RGBA')
             tex = ImageDraw.Draw(frame)
-            x, h = tex.textsize(crab_message, font=fnt)
-            adj_x, adj_h = (l - x) / 2, (w / 3.5) - (h / 20)
             tex.text((adj_x, adj_h), crab_message, font=fnt)
             #   the black border
             tex.text((adj_x - 1, adj_h - 1), crab_message, font=fnt, fill=shadow)
@@ -82,14 +86,13 @@ async def on_message(message):
             #   the white text
             tex.text((adj_x, adj_h), crab_message, fill=txt_clr, font=fnt)
             del tex
-            temp = io.BytesIO()
-            frame.save(temp, format="GIF", save_all=True, append_images=frames[1:])
             frames.append(frame)
         out = io.BytesIO()
         frames[0].save(out, save_all=True, append_images=frames[1:], format="GIF")
         out.seek(0)
-
+        print("--- %s seconds --- before internet" % (time.time() - start_time))
         await client.send_file(message.channel, out, filename='your_crab.gif')
+        print("--- %s seconds ---" % (time.time() - start_time))
         #   await client.send_message(message.channel, str(im.size))    #   prints the size
 
 
@@ -101,4 +104,4 @@ async def on_ready():
     print('------')
 
 
-client.run(TOKEN)
+client.run(config.TOKEN)
