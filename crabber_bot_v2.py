@@ -1,6 +1,7 @@
 import io
 import time
 import config
+
 import discord
 from PIL import Image, ImageDraw, ImageFont, ImageSequence
 from moviepy.editor import *
@@ -119,7 +120,8 @@ async def on_message(message):
             return
         l, w = gif.size
         sz = int((l / 1.83 / char) + 20)
-        tex_img = TextClip(crab_message, fontsize=sz, color='white', font='DUBAI-LIGHT.TTF')
+        fnt = ImageFont.truetype('DUBAI-LIGHT.TTF')
+        tex_img = TextClip(crab_message)
         tex_img = tex_img.set_pos('center').set_duration(10)
         video1 = CompositeVideoClip([vid, tex_img])
         print("--- %s seconds --- before internet" % (time.time() - start_time))
